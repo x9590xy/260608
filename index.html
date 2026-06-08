@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Rush</title>
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at center, #111, #000);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.game {
+  width: 360px;
+  padding: 20px;
+  border-radius: 20px;
+  background: #1a1a1a;
+  box-shadow: 0 0 30px rgba(0,255,255,0.2);
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.timer {
+  color: #00ffcc;
+}
+
+.score {
+  color: #ffcc00;
+}
+
+.question {
+  text-align: center;
+  font-size: 36px;
+  margin: 30px 0;
+  font-weight: bold;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+button {
+  padding: 15px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  background: #222;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #333;
+}
+
+.correct {
+  background: #00cc66 !important;
+}
+
+.wrong {
+  background: #cc0033 !important;
+}
+
+.bottom {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.combo {
+  color: #ff6699;
+}
+
+.start-screen, .end-screen {
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.big-btn {
+  margin-top: 20px;
+  padding: 15px 30px;
+  font-size: 18px;
+  border-radius: 10px;
+  background: #00ccff;
+  color: black;
+  border: none;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="game">
+
+<div class="start-screen" id="startScreen">
+  <h1>⚡ Math Rush</h1>
+  <p>빠르게 계산해서 점수를 올려라!</p>
+  <button class="big-btn" onclick="startGame()">시작</button>
+</div>
+
+<div class="play-screen hidden" id="playScreen">
+  <div class="top">
+    <div class="timer">⏱ <span id="time">60</span></div>
+    <div class="score">🏆 <span id="score">0</span></div>
+  </div>
+
+  <div class="question" id="question">1 + 1</div>
+
+  <div class="choices" id="choices"></div>
+
+  <div class="bottom">
+    <div class="combo">🔥 x<span id="combo">0</span></div>
+    <div id="feedback"></div>
+  </div>
+</div>
+
+<div class="end-screen hidden" id="endScreen">
+  <h2>🎉 게임 종료!</h2>
+  <p>점수: <span id="finalScore"></span></p>
+  <button class="big-btn" onclick="location.reload()">다시하기</button>
+</div>
+
+</div>
+
+<script>
+let score = 0;
+let time = 60;
+let combo = 0;
+let correctAnswer;
+let timer;
+
+function startGame() {
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('playScreen').classList.remove('hidden');
+  nextQuestion();
+  timer = setInterval(() => {
+    time--;
+    document.getElementById('time').textContent = time;
+    if (time <= 0) endGame();
+  }, 1000);
+}
+
+function nextQuestion() {
+  let a = Math.floor(Math.random() * 10);
+  let b = Math.floor(Math.random() * 10);
+  let ops = ['+', '-', '*'];
+  let op = ops[Math.floor(Math.random() * ops.length)];
+
+  if (op === '+') correctAnswer = a + b;
+  if (op === '-') correctAnswer = a - b;
+  if (op === '*') correctAnswer = a * b;
+
+  document.getElementById('question').textContent = `${a} ${op} ${b}`;
+
+  let answers = [correctAnswer];
+  while (answers.length < 5) {
+    let wrong = correctAnswer + Math.floor(Math.random() * 10 - 5);
+    if (!answers.includes(wrong)) answers.push(wrong);
+  }
+
+  answers.sort(() => Math.random() - 0.5);
+
+  let choicesDiv = document.getElementById('choices');
+  choicesDiv.innerHTML = '';
+
+  answers.forEach(ans => {
+    let btn = document.createElement('button');
+    btn.textContent = ans;
+    btn.onclick = () => checkAnswer(btn, ans);
+    choicesDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(button, answer) {
+  let feedback = document.getElementById('feedback');
+
+  if (answer === correctAnswer) {
+    score += 10 + combo * 2;
+    combo++;
+    button.classList.add('correct');
+    feedback.textContent = '✅';
+  } else {
+    combo = 0;
+    button.classList.add('wrong');
+    feedback.textContent = '❌';
+  }
+
+  document.getElementById('score').textContent = score;
+  document.getElementById('combo').textContent = combo;
+
+  setTimeout(() => {
+    nextQuestion();
+    feedback.textContent = '';
+  }, 300);
+}
+
+function endGame() {
+  clearInterval(timer);
+  document.getElementById('playScreen').classList.add('hidden');
+  document.getElementById('endScreen').classList.remove('hidden');
+  document.getElementById('finalScore').textContent = score;
+}
+</script>
+
+</body>
+</html>
